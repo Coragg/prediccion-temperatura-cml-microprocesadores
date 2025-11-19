@@ -10,13 +10,13 @@ def load_and_preprocess_data(filepath):
     """Carga y preprocesa los datos de temperatura"""
     df = pd.read_csv(filepath, index_col=0)
 
-    # Convertir fecha a features num�ricos
+    # Convertir fecha a features numericos
     df['Date'] = pd.to_datetime(df['Date'], format='%d.%m.%Y')
     df['month'] = df['Date'].dt.month
     df['day'] = df['Date'].dt.day
     df['day_of_year'] = df['Date'].dt.dayofyear
 
-    # Codificar variables categ�ricas
+    # Codificar variables categaricas
     le_weather = LabelEncoder()
     le_cloud = LabelEncoder()
 
@@ -33,7 +33,7 @@ def prepare_features(df):
     ]
 
     X = df[feature_columns]
-    y = df['maxtemp']  # Predecir temperatura m�xima
+    y = df['maxtemp']  # Predecir temperatura maxima
 
     return X, y
 
@@ -80,14 +80,14 @@ def main():
     # Evaluar modelo
     metrics, y_pred = evaluate_model(model, X_test, y_test)
 
-    # Mostrar m�tricas
+    # Mostrar metricas
     print("\n## Metricas del Modelo Random Forest")
     print(f"- **MSE**: {metrics['mse']:.4f}")
     print(f"- **RMSE**: {metrics['rmse']:.4f}")
     print(f"- **MAE**: {metrics['mae']:.4f}")
     print(f"- **R2**: {metrics['r2']:.4f}")
 
-    # Guardar m�tricas en JSON para CML
+    # Guardar metricas en JSON para CML
     with open('metrics.json', 'w') as f:
         json.dump(metrics, f, indent=2)
 
