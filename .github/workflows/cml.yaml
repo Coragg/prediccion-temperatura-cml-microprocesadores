@@ -56,7 +56,7 @@ jobs:
           echo "" >> report.md
           echo "## Visualizations" >> report.md
           echo "" >> report.md
-          echo '![Cluster Plot](./cluster_plot.png)' >> report.md
+          cml publish cluster_plot.png --md >> report.md
           echo "" >> report.md
           cml comment create report.md
 
