@@ -1,0 +1,64 @@
+name: CML Temperature Prediction
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  train-and-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install numpy pandas scipy scikit-learn matplotlib
+
+      - name: Setup CML
+        uses: iterative/setup-cml@v2
+
+      - name: Train model
+        run: python src/train.py
+
+      - name: Generate plots
+        run: python src/cluster_plot.py
+
+      - name: Create CML report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "# Temperature Prediction Report" >> report.md
+          echo "" >> report.md
+          echo "## Model: Random Forest Regressor" >> report.md
+          echo "" >> report.md
+
+          # Add metrics from training
+          echo "## Model Metrics" >> report.md
+          echo "" >> report.md
+          echo "\`\`\`json" >> report.md
+          cat metrics.json >> report.md
+          echo "" >> report.md
+          echo "\`\`\`" >> report.md
+          echo "" >> report.md
+
+          # Add cluster plot
+          echo "## Visualizations" >> report.md
+          echo "" >> report.md
+          cml comment create --publish report.md
+          cml comment update --publish --watermark-title="CML Report" report.md || true
+
+          # Add image to report
+          echo "![Cluster Plot](./cluster_plot.png)" >> report.md
+
+          # Publish final report
+          cml comment create report.md
