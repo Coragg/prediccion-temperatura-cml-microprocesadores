@@ -56,6 +56,17 @@ jobs:
           echo "" >> report.md
           echo "## Visualizations" >> report.md
           echo "" >> report.md
-          cml publish cluster_plot.png --md >> report.md
+          echo '![Cluster Plot](./cluster_plot.png)' >> report.md
           echo "" >> report.md
           cml comment create report.md
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-results
+          path: |
+            metrics.json
+            predictions.csv
+            feature_importance.csv
+            cluster_plot.png
+            report.md
