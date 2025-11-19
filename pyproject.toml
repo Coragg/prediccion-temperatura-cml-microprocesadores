@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "prediccion-temperatura-cml-microprocesadores"
+version="1.0.0"
+description = ""
+authors = ["Victor Camero"]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+numpy = "*"
+pandas = "*"
+scipy = "*"
+scikit-learn = "*"
+matplotlib = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.2.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
