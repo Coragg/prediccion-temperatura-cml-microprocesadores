@@ -54,9 +54,9 @@ def prepare_features(df):
 def train_model(X_train, y_train):
     """Entrena el modelo Random Forest optimizado"""
     model = RandomForestRegressor(
-        n_estimators=400,        # Mas arboles
-        max_depth=90,            # Mayor profundidad
-        min_samples_split=2,     # Minimo para dividir
+        n_estimators=600,        # Mas arboles
+        max_depth=30,            # Mayor profundidad
+        min_samples_split=20,     # Minimo para dividir
         min_samples_leaf=1,      # Minimo en hojas
         max_features='sqrt',     # Features por arbol
         bootstrap=True,
