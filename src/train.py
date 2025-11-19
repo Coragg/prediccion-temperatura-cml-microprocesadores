@@ -12,6 +12,8 @@ def load_and_preprocess_data(filepath):
 
     # Convertir fecha a features numericos
     df['Date'] = pd.to_datetime(df['Date'], format='%d.%m.%Y')
+    df = df.sort_values('Date').reset_index(drop=True)
+
     df['month'] = df['Date'].dt.month
     df['day'] = df['Date'].dt.day
     df['day_of_year'] = df['Date'].dt.dayofyear
@@ -30,9 +32,26 @@ def load_and_preprocess_data(filepath):
     df['weather_encoded'] = le_weather.fit_transform(df['weather'].fillna('Unknown'))
     df['cloud_encoded'] = le_cloud.fit_transform(df['cloud'].fillna('Unknown'))
 
+    # Features de lag temporal (dias anteriores)
+    for lag in [1, 2, 3, 7]:
+        df[f'maxtemp_lag{lag}'] = df['maxtemp'].shift(lag)
+        df[f'mintemp_lag{lag}'] = df['mintemp'].shift(lag)
+
+    # Promedios moviles
+    df['maxtemp_rolling3'] = df['maxtemp'].rolling(window=3).mean().shift(1)
+    df['maxtemp_rolling7'] = df['maxtemp'].rolling(window=7).mean().shift(1)
+    df['mintemp_rolling3'] = df['mintemp'].rolling(window=3).mean().shift(1)
+
+    # Diferencia de temperatura del dia anterior
+    df['temp_diff_lag1'] = df['maxtemp'].shift(1) - df['mintemp'].shift(1)
+
     # Features adicionales
     df['temp_range_proxy'] = df['pressure'] * df['humidity'] / 1000
     df['wind_humidity'] = df['mean wind speed'] * df['humidity'] / 100
+    df['pressure_diff'] = df['pressure'].diff().shift(1)
+
+    # Eliminar filas con NaN por los lags
+    df = df.dropna()
 
     return df
 
@@ -43,7 +62,13 @@ def prepare_features(df):
         'month', 'day', 'day_of_year', 'week_of_year',
         'month_sin', 'month_cos', 'day_sin', 'day_cos',
         'weather_encoded', 'cloud_encoded',
-        'temp_range_proxy', 'wind_humidity'
+        'temp_range_proxy', 'wind_humidity', 'pressure_diff',
+        # Features de lag temporal
+        'maxtemp_lag1', 'maxtemp_lag2', 'maxtemp_lag3', 'maxtemp_lag7',
+        'mintemp_lag1', 'mintemp_lag2', 'mintemp_lag3', 'mintemp_lag7',
+        # Promedios moviles
+        'maxtemp_rolling3', 'maxtemp_rolling7', 'mintemp_rolling3',
+        'temp_diff_lag1'
     ]
 
     X = df[feature_columns]
@@ -55,11 +80,12 @@ def train_model(X_train, y_train):
     """Entrena el modelo Random Forest optimizado"""
     model = RandomForestRegressor(
         n_estimators=500,        # Mas arboles
-        max_depth=30,            # Mayor profundidad
-        min_samples_split=20,     # Minimo para dividir
+        max_depth=None,          # Sin limite de profundidad
+        min_samples_split=2,     # Permitir splits finos
         min_samples_leaf=1,      # Minimo en hojas
-        max_features='sqrt',     # Features por arbol
+        max_features=0.8,        # 80% de features por arbol
         bootstrap=True,
+        oob_score=True,          # Validacion out-of-bag
         random_state=42,
         n_jobs=-1
     )
