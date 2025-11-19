@@ -7,9 +7,10 @@ on:
     branches: [main, master]
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   issues: write
+  statuses: write
 
 jobs:
   train-and-report:
